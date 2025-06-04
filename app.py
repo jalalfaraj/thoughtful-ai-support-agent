@@ -96,11 +96,11 @@ def main():
 
     user_input = st.text_input("Your Question:")
     if user_input:
-        try:
-            response = get_best_response(user_input)
-            st.markdown(f"**Agent:** {response}")
-        except Exception as e:
-            st.error(f"An error occurred: {e}")
-            st.stop()
-
+        with st.spinner("Thinking..."):
+            try:
+                response = get_best_response(user_input)
+                st.markdown(f"**Agent:** {response}")
+            except Exception as e:
+                st.error(f"An error occurred: {e}")
+                st.stop()
 main()
