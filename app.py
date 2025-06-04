@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Jun  3 19:19:55 2025
+Created on Tue Jun  3 2025
 
 @author: jalalfaraj
 """
@@ -11,7 +11,6 @@ from sentence_transformers import SentenceTransformer, util
 from transformers import pipeline
 import torch
 
-# Set page config as the first Streamlit command
 st.set_page_config(page_title="Thoughtful AI Support Agent", page_icon="🤖")
 
 # Hardcoded FAQ dataset with keywords
@@ -58,7 +57,7 @@ question_embeddings = embedder.encode(faq_questions, convert_to_tensor=True)
 def get_best_response(user_input: str) -> str:
     user_input_clean = user_input.lower()
 
-    # Priority 1: Keyword filtering
+    # 1st Try Matching via: Keyword filtering
     keyword_matched_indices = []
     for idx, entry in enumerate(FAQ_DATA):
         if any(kw in user_input_clean for kw in entry["keywords"]):
@@ -73,14 +72,14 @@ def get_best_response(user_input: str) -> str:
         if cosine_scores[torch.argmax(cosine_scores)] >= 0.6:
             return FAQ_DATA[best_idx]["answer"]
 
-    # Priority 2: Sentence similarity across full FAQ
+    # 2nd Try via Sentence similarity across full FAQ
     user_embedding = embedder.encode(user_input, convert_to_tensor=True)
     cosine_scores = util.pytorch_cos_sim(user_embedding, question_embeddings)[0]
     best_match_idx = torch.argmax(cosine_scores).item()
     if cosine_scores[best_match_idx] >= 0.65:
         return FAQ_DATA[best_match_idx]["answer"]
 
-    # Priority 3: Zero-shot classifier fallback
+    # 3rd Try via  Zero-shot classifier fallback
     result = classifier(user_input, faq_questions)
     if result["scores"][0] >= 0.6:
         best_label = result["labels"][0]
@@ -88,7 +87,7 @@ def get_best_response(user_input: str) -> str:
             if entry["question"] == best_label:
                 return entry["answer"]
 
-    # Fallback response
+    # Fallback response (if none of the three attempts above give a response)
     return "I'm your Thoughtful AI support agent. You can ask me about our automation tools like EVA, CAM, or PHIL."
 
 def main():
